@@ -6,7 +6,7 @@ module.exports = {
     async task(ctx) {
         try {
             let res = await ctx.service.home.getDayEarnings();
-            console.log(res);
+            console.log('===getDayEarnings==> ',res);
             return;
         } catch (e) {
             this.ctx.logger.error('task >> update day earnings error : ' + e.message);

@@ -158,6 +158,7 @@ class HomeController extends Controller {
     }
 
 
+    /// 算力合约详情
     async getHashrateTreatyDetails() {
         const {ctx} = this;
         let response = Response();
@@ -569,7 +570,33 @@ class HomeController extends Controller {
 
             let usdPrice = await this.ctx.service.mongodb.quoteService.findOneQuoteUSDBySymbol(obj.symbol);
             let cnyPrice = commonUtil.bigNumberMultipliedBy(usdPrice, 7, 8);
+            
             obj.cny_money = commonUtil.bigNumberMultipliedBy(cnyPrice, profit, 2);
+
+            /// 每日电费 和 欠费状态
+            obj.everyday_electric = commonUtil.bigNumberMultipliedBy(obj.buy_quantity, obj.electric_bill, 4);
+            let resArrearsList = await ctx.service.home.getHashrateOrderArrears(userId, orderId);
+            let isArrears = (resArrearsList && resArrearsList.length > 0) ? true : false;
+            if(isArrears && resArrearsList){
+                let arrearsElectric = 0;
+                let minTime = Date.now();
+                let notGrantProfit = 0;
+                for(let ai = 0 ; ai < resArrearsList.length; ai++){
+                    let info = resArrearsList[ai];
+
+                    arrearsElectric = commonUtil.bigNumberPlus(arrearsElectric, info.electricity, 8);
+                    notSendProfit = commonUtil.bigNumberPlus(notSendProfit, info.profit, 8);
+
+                    let isDateTime = new Date(info.isdate).getTime();
+                    if(isDateTime < minTime){
+                        minTime = isDateTime;
+                    }
+                }
+                obj.arrears_day = Math.floor((s1 - minTime) / 86400000);  ///欠店费的天数
+                obj.arrears_electric = arrearsElectric;     ///欠电费总额
+                obj.not_grant_profit = notGrantProfit;      ///未发放的收益
+            }
+            obj.is_arrears = isArrears;
 
             response.content.data = obj;
             return ctx.body = response;

@@ -31,10 +31,13 @@ class UserController extends Controller {
             }
             let unit = 'USDT';
 
+            let totalArrearsNum = await ctx.service.home.getHashrateOrderArrearsElectic(userId);
             let result = {
                 balance: balance ? balance : 0,
                 today_electricity: today_electricity ? today_electricity.toFixed(3) : 0,
-                unit: unit
+                unit: unit,
+                totalArrears: totalArrearsNum || 0,
+                electricUnit: 'USD'
             };
 
             response.content.data = result;

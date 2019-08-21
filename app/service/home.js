@@ -318,6 +318,7 @@ class HomeService extends Service {
                         ho.pay_time,
                         ht.price,
                         ht.unit_money,
+                        ht.electric_bill,
                         ht.run_cycle,
                         ho.excavate_time,
                         hot.transaction_money,
@@ -342,6 +343,29 @@ class HomeService extends Service {
         return result[0];
     }
 
+    /// 获取用户合约欠费情况
+    async getHashrateOrderArrears(userId, orderId){
+        let sql = `
+            SELECT profit, electricity, coin_type, isdate 
+            FROM ${table.HASHRATE_ORDER_PROFIT} hop
+            WHERE user_id = ${userId} AND status = 2
+        `;
+        if(!!orderId){
+            sql = sql + ` AND order_id = ${orderId}`;
+        }
+        let result = await this.app.mysql.get(dbName).query(sql);
+        return result;
+    }
+
+    async getHashrateOrderArrearsElectic(userId){
+        let sql = `
+            SELECT SUM(electricity) AS total_electricity 
+            FROM ${table.HASHRATE_ORDER_PROFIT} hop
+            WHERE user_id = ${userId} AND status = 2
+        `;
+        let result = await this.app.mysql.get(dbName).query(sql);
+        return result[0] ? result[0].total_electricity : 0;
+    }
 
     async getUserBalanceCoinList() {
         let sql = `select symbol from ${table.TOKENSKY_USER_BALANCE_COIN} where status = 1 `;

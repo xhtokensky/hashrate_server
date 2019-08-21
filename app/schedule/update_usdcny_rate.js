@@ -6,7 +6,7 @@ module.exports = {
     async task(ctx) {
         try {
             let res = await ctx.service.home.getUsdCnyRate();
-            console.log(res);
+            console.log('===getUsdCnyRate==>',res);
             return;
         } catch (e) {
             this.ctx.logger.error('task >> update getUsdCnyRate error : ' + e.message);
